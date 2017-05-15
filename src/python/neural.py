@@ -27,7 +27,7 @@ import math
 import numpy
 import decimal
 
-import misc
+import functions
 
 __author__ = u'Tegona SA'
 
@@ -50,7 +50,7 @@ class CompleteNeuralNet(object):
                  neuron_funs=None):
 
         if neuron_funs is None:
-            neuron_funs = [misc.Identity]
+            neuron_funs = [functions.Identity]
 
         self.biases = []
         self.weights = []

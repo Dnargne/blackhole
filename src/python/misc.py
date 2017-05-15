@@ -29,9 +29,6 @@ import decimal
 
 __author__ = u'Tegona SA'
 
-#
-## Math functions
-
 class Identity(object):
 
     def fun(self, z):

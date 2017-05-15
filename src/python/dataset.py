@@ -30,7 +30,11 @@ import random
 import fnmatch
 import itertools
 import idx2numpy
-from PIL import Image
+
+try:
+    from PIL import Image
+except:
+    pass
 
 __author__ = u'Tegona SA'
 
@@ -69,6 +73,7 @@ class FileTreeDataset(Dataset):
     def get_files(self):
         matches = {}
 
+        self.count = 0
         for root, dirnames, filenames in os.walk(self.path):
             for filename in fnmatch.filter(filenames, self.extension):
                 filename = os.path.join(root, filename)
@@ -79,7 +84,7 @@ class FileTreeDataset(Dataset):
 
                 self.count += 1
                 matches[label].append(filename)
-
+        print('count = %s' % self.count)
         return matches
 
     def prepare_data(self, data):
@@ -145,7 +150,8 @@ class FileTreeDataset(Dataset):
         if self._files is None:
             self._files = []
             file_dict = self.get_files()
-
+            for k, v in file_dict.items():
+                print('%s: %s' % (k, len(v)))
             for a in zip(*tuple(file_dict.values())):
                 for e in a:
                     self._files.append(e)

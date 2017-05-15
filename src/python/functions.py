@@ -22,23 +22,57 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import png
-import math
 import numpy
-import decimal
-
-import misc
 
 __author__ = u'Tegona SA'
 
-#
-## Types
+class Identity(object):
 
-matrix = None
-random = None
+    def fun(self, z):
+        return z
 
-#
-## Functions
+    def prime(self, x):
+        return 1
 
-numpy_to_matrix
-matrix_dot = None
+class Sigmoid(object):
+
+    name = 'sigmoid'
+
+    def fun(self, z):
+        return 1.0 / (1.0 + numpy.exp(-z))
+
+    def prime(self, x):
+        return x * (1.0 - x)
+
+class SoftMax(object):
+
+    name = 'softmax'
+
+    def fun(self, z):
+
+        s = numpy.sum(numpy.exp(z))
+
+        return numpy.divide(numpy.exp(z), s)
+
+    def prime(self, x):
+        """
+        (u/v)' = (u'v - uv') / v^2
+        """
+
+        u = numpy.exp(x)
+        v = numpy.sum(numpy.exp(x))
+
+        return numpy.divide(u * v, v**2)
+
+class Tanh(object):
+
+    name = 'tanh'
+
+    def fun(self, z):
+        return numpy.tanh(z)
+
+    def prime(self, z):
+        """
+        (u/v)' = (u'v - uv') / v^2
+        """
+        return 1 - numpy.tanh(z)**2

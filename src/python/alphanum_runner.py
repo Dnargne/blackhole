@@ -30,58 +30,54 @@ import random
 import misc
 import neural
 import dataset
+import functions
 
 __author__ = u'Tegona SA'
 
 def learn(neural_net,
           learning_rate,
-          learn_sample,
           epoch_count,
-          counts):
+          learn_dataset,
+          test_dataset):
 
     error_min = 100
     sample_errors = 0
-    sample_count, test_count = counts
 
     if epoch_count == 0:
         return
 
-    t1 = time.time()
-    for inputs, label in learn_sample[:sample_count]:
-        reference = misc.set_bit_alphanum(label)
+    for i in range(1, epoch_count + 1):
+        t1 = time.time()
+        for inputs, label in learn_dataset:
+            reference = misc.set_bit_alphanum(label)
 
-        inputs = numpy.array([ float(p) / 255 for p in inputs ]).reshape((32 * 32, 1))
-        #print('----------------------- %s' % label)
-        #misc.display_image(inputs, 32)
-        outputs, error = neural_net.sequential_learn(inputs,
-                                                     reference,
-                                                     learning_rate,
-                                                     ERROR_FILE)
-        #print(reference)
-        #print(outputs)
-        res = numpy.argmax(outputs)
-        label = numpy.argmax(reference)
-        #print('res, label = %s, %s' % (res, label))
-        error_min = numpy.minimum(error, error_min)
+            inputs = numpy.array([ float(p) / 255 for p in inputs ]).reshape((32 * 32, 1))
+            #print('----------------------- %s' % label)
+            #misc.display_image(inputs, 32)
+            outputs, error = neural_net.sequential_learn(inputs,
+                                                         reference,
+                                                         learning_rate,
+                                                         ERROR_FILE)
+            #print(reference)
+            #print(outputs)
+            res = numpy.argmax(outputs)
 
-        if res != label:
-            sample_errors += 1
+            label = numpy.argmax(reference)
+            #print('res, label = %s, %s' % (res, label))
+            error_min = numpy.minimum(error, error_min)
 
-    test_errors = compute(neural_net, learn_sample[-test_count:])
+            if res != label:
+                sample_errors += 1
 
-    duration = time.time() - t1
+        test_errors = compute(neural_net, test_dataset)
 
-    print('Epoch %s' % epoch_count)
-    print('---- Error min              : %s' % (error_min))
-    print('---- Learning errors / total: %s / %s' % (sample_errors, sample_count))
-    print('---- Test       ok   / total: %s / %s' % (test_count - test_errors, test_count))
-    print('-----Time                   : %s sec' % duration)
+        duration = time.time() - t1
 
-    learn(neural_net,
-          learning_rate,
-          learn_sample,
-          epoch_count - 1,
-          counts)
+        print('Epoch %s' % i)
+        print('---- Error min               : %s' % (error_min))
+        print('---- Learning errors / total : %s / %s' % (sample_errors, len(learn_dataset)))
+        print('---- Test     success / total: %s / %s' % (len(test_dataset) - test_errors, len(test_dataset)))
+        print('-----Time                    : %s sec' % duration)
 
 def compute(neural_net, sample, image_save=False):
     errors = 0
@@ -111,28 +107,24 @@ def save(neural_net):
 random.seed()
 
 THRESHOLD = 1.0
-LEARNING_RATE = 0.3
-EPOCH_COUNT = 30
-SAMPLE_COUNT = 60000
+LEARNING_RATE = 0.41#0.31
+EPOCH_COUNT = 100
+SAMPLE_COUNT = 300000
 TEST_COUNT = 10000
 
 ERROR_FILE = open('./error', 'w')
 OUTPUT_FILE = open('./output', 'w')
 
-def extract(filename):
-    f = ntpath.basename(filename)
-    return chr(int(f[:2], 16))
+dataset = dataset.CsvFileDataset('./dataset/alphanum')
 
-learn_dataset = dataset.CsvFileDataset('./dataset/alphanum')
-
-neural_net = neural.CompleteNeuralNet(layers=[32 * 32, 1024, 62],
-                                      neuron_funs=[misc.Sigmoid()])#, misc.SoftMax()])
+neural_net = neural.CompleteNeuralNet(layers=[32 * 32, 100, 62],
+                                      neuron_funs=[functions.Sigmoid(), functions.SoftMax()])
 
 learn(neural_net,
       LEARNING_RATE,
-      learn_dataset,
       EPOCH_COUNT,
-      (SAMPLE_COUNT, TEST_COUNT))
+      dataset[:-TEST_COUNT],
+      dataset[-TEST_COUNT:])
 
 ERROR_FILE.flush()
 ERROR_FILE.close()

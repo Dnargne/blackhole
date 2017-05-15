@@ -23,12 +23,14 @@
 # SOFTWARE.
 
 import png
+import time
 import numpy
 import random
 
 import misc
 import neural
 import dataset
+import functions
 
 __author__ = u'Tegona SA'
 
@@ -45,6 +47,7 @@ def learn(neural_net,
     if epoch_count == 0:
         return
 
+    t1 = time.time()
     for inputs, label in learn_sample[:sample_count]:
         reference = misc.set_bit_array(label)
 
@@ -62,10 +65,13 @@ def learn(neural_net,
 
     test_errors = compute(neural_net, learn_sample[-test_count:])
 
+    duration = time.time() - t1
+
     print('Epoch %s' % epoch_count)
     print('---- Error min              : %s' % (error_min))
     print('---- Learning errors / total: %s / %s' % (sample_errors, sample_count))
     print('---- Test       ok   / total: %s / %s' % (test_count - test_errors, test_count))
+    print('-----Time                   : %s sec' % duration)
 
     learn(neural_net,
           learning_rate,
@@ -102,7 +108,7 @@ def save(neural_net):
 random.seed()
 
 THRESHOLD = 1.0
-LEARNING_RATE = 0.3
+LEARNING_RATE = 3.0
 EPOCH_COUNT = 100
 SAMPLE_COUNT = 60000
 TEST_COUNT = 10000
@@ -114,8 +120,8 @@ OUTPUT_FILE = open('./output', 'w')
 learn_dataset = dataset.IdxFileDataset('./dataset/train-images.idx3-ubyte',
                                        './dataset/train-labels.idx1-ubyte')
 
-neural_net = neural.CompleteNeuralNet(layers=[28 * 28, 100, 10],
-                                      neuron_funs=[misc.Sigmoid()])
+neural_net = neural.CompleteNeuralNet(layers=[28 * 28, 30, 10],
+                                      neuron_funs=[functions.Tanh(), functions.SoftMax()])
 
 learn(neural_net,
       learning_rate,
