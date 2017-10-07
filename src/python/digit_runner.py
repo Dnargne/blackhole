@@ -49,6 +49,7 @@ def learn(neural_net,
 
     t1 = time.time()
     for inputs, label in learn_sample[:sample_count]:
+
         reference = misc.set_bit_array(label)
 
         inputs = numpy.array([ float(p) / 255 for p in inputs ]).reshape((784, 1))
@@ -109,7 +110,7 @@ random.seed()
 
 THRESHOLD = 1.0
 LEARNING_RATE = 3.0
-EPOCH_COUNT = 100
+EPOCH_COUNT = 10
 SAMPLE_COUNT = 60000
 TEST_COUNT = 10000
 learning_rate = LEARNING_RATE
@@ -121,7 +122,7 @@ learn_dataset = dataset.IdxFileDataset('./dataset/train-images.idx3-ubyte',
                                        './dataset/train-labels.idx1-ubyte')
 
 neural_net = neural.CompleteNeuralNet(layers=[28 * 28, 30, 10],
-                                      neuron_funs=[functions.Tanh(), functions.SoftMax()])
+                                      neuron_funs=[functions.Sigmoid()])
 
 learn(neural_net,
       learning_rate,
