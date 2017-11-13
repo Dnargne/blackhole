@@ -110,7 +110,7 @@ def save(neural_net):
 random.seed()
 
 THRESHOLD = 1.0
-LEARNING_RATE = 3.0
+LEARNING_RATE = 1.0
 EPOCH_COUNT = 30
 SAMPLE_COUNT = 60000
 TEST_COUNT = 10000
