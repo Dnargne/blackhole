@@ -101,7 +101,7 @@ class CompleteNeuralNet(object):
 
     def hidden_error_signals(self, error_signal, weights, outputs):
 
-        return numpy.dot(error_signal.transpose(), weights) * self.neuron_funs[0].prime(outputs)
+        return numpy.dot(error_signal.transpose(), weights).transpose() * self.neuron_funs[0].prime(outputs)
 
     def set_weights(self, error_signals, learning_rate):
 
