@@ -103,7 +103,9 @@ class CompleteNeuralNet(object):
     def set_weights(self, error_signals, learning_rate):
 
         for i in range(len(self.weights)):
-            self.weights[i] = self.weights[i] + (learning_rate * numpy.dot(error_signals[i], self.inputs[i].transpose()))
+            self.weights[i] = self.weights[i] + \
+                              (learning_rate * numpy.dot(error_signals[i],
+                                                         self.inputs[i].transpose()))
 
     def set_biases(self, error_signals, learning_rate):
 

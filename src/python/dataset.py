@@ -215,6 +215,8 @@ class IdxFileDataset(Dataset):
 
     _dataset = None
     _labels = None
+    _data_path = None
+    _label_path = None
 
     def __init__(self, data_path, label_path):
         self.data_path = data_path
@@ -233,7 +235,7 @@ class IdxFileDataset(Dataset):
 
     def __getitem__(self, index):
 
-        if type(index) == int:
+        if isinstance(index, int):
             return (self.prepare_data(self.dataset[index]),
                     self.labels[index])
 
@@ -242,6 +244,16 @@ class IdxFileDataset(Dataset):
 
         dataset.dataset = self.dataset.__getitem__(index)
         dataset.labels = self.labels.__getitem__(index)
+
+        return dataset
+
+    def __getslice__(self, i, j):
+
+        dataset = IdxFileDataset(self.data_path,
+                                 self.label_path)
+
+        dataset.dataset = self.dataset.__getslice__(i, j)
+        dataset.labels = self.labels.__getslice__(i, j)
 
         return dataset
 
@@ -300,7 +312,7 @@ class CsvFileDataset(Dataset):
 
     def __getitem__(self, index):
 
-        if type(index) == int:
+        if isinstance(index, int):
 
             if index not in self.data.keys():
                 self.data[index] = self.prepare_data(self.content[index])

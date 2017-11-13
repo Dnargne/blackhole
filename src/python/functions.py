@@ -42,7 +42,7 @@ class Sigmoid(object):
         return 1.0 / (1.0 + numpy.exp(-z))
 
     def prime(self, x):
-        return x * (1.0 - x)
+        return self.fun(x) * (1.0 - self.fun(x))
 
 class SoftMax(object):
 
