@@ -43,6 +43,7 @@ class CompleteNeuralNet(object):
     neuron_funs = None
     inputs = None
     outputs = None
+    zs = None
 
     def __init__(self,
                  json=None,
@@ -73,6 +74,7 @@ class CompleteNeuralNet(object):
         """
         self.outputs = []
         self.inputs = []
+        self.zs = []
 
         for w, b in zip(self.weights, self.biases):
             self.inputs.append(inputs)
@@ -81,24 +83,25 @@ class CompleteNeuralNet(object):
             if len(self.inputs) == len(self.weights):
                 neuron_fun = self.neuron_funs[-1]
 
-            inputs = neuron_fun.fun(numpy.dot(w, inputs) + b)
-            outputs = inputs
+            zs = numpy.dot(w, inputs) + b
+            inputs = neuron_fun.fun(zs)
 
-            self.outputs.append(outputs)
+            self.zs.append(zs)
+            self.outputs.append(inputs)
 
-        return outputs
+        return self.outputs[-1]
 
     def total_output_error(self, outputs, references):
 
         return (sum((references - outputs) ** 2)) / float(len(outputs))
 
-    def output_error_signals(self, outputs, references):
+    def output_error_signals(self, outputs, zs, references):
 
-        return (references - outputs) * self.neuron_funs[-1].prime(outputs)
+        return (references - outputs) * self.neuron_funs[-1].prime(zs)
 
     def hidden_error_signals(self, error_signal, weights, outputs):
 
-        return numpy.dot(error_signal.transpose(), weights).transpose() * self.neuron_funs[0].prime(outputs)
+        return numpy.dot(error_signal.transpose(), weights) * self.neuron_funs[0].prime(outputs)
 
     def set_weights(self, error_signals, learning_rate):
 
@@ -122,13 +125,15 @@ class CompleteNeuralNet(object):
         #error_file.write('%s\n' % error[0])
 
         error_signals.append(self.output_error_signals(outputs,
+                                                       self.zs[-1],
                                                        references))
 
         hidden_layer_count = len(self.weights) - 1
+
         for i in reversed(range(hidden_layer_count)):
             error_signals.append(self.hidden_error_signals(error_signals[-1],
                                                            self.weights[i + 1],
-                                                           self.outputs[i]))
+                                                           self.zs[i]))
 
         error_signals.reverse()
 
