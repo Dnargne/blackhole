@@ -23,12 +23,9 @@
 # SOFTWARE.
 
 import os
-import png
 import numpy
-import ntpath
 import random
 import fnmatch
-import itertools
 import idx2numpy
 
 try:
@@ -84,7 +81,7 @@ class FileTreeDataset(Dataset):
 
                 self.count += 1
                 matches[label].append(filename)
-        print('count = %s' % self.count)
+
         return matches
 
     def prepare_data(self, data):
@@ -297,18 +294,18 @@ class CsvFileDataset(Dataset):
     _path = None
     _content = None
     _data = None
+    _sep = None
 
-    def __init__(self, path):
+    def __init__(self, path, sep):
         self.path = path
         self.data = {}
+        self.sep = sep
 
     def prepare_data(self, row):
-        row_array = row.split(';')
 
-        array = eval(row_array[1])
-        label = row_array[0]
+        row = row.replace('\n', '')
 
-        return (numpy.array(array).reshape((len(array), 1)), label)
+        return row.split(self.sep)
 
     def __getitem__(self, index):
 
@@ -319,9 +316,17 @@ class CsvFileDataset(Dataset):
 
             return self.data[index]
 
-        dataset = CsvFileDataset(self.path)
+        dataset = CsvFileDataset(self.path, self.sep)
 
         dataset.content = self.content[index]
+
+        return dataset
+
+    def __getslice__(self, i, j):
+
+        dataset = CsvFileDataset(self.path, self.sep)
+
+        dataset.content = self.content.__getslice__(i, j)
 
         return dataset
 
@@ -356,3 +361,21 @@ class CsvFileDataset(Dataset):
     @data.setter
     def data(self, value):
         self._data = value
+
+    @property
+    def sep(self):
+        return self._sep
+
+    @sep.setter
+    def sep(self, value):
+        self._sep = value
+
+class CsvFileArrayDataset(CsvFileDataset):
+
+    def prepare_data(self, row):
+        row_array = super(CsvFileArrayDataset, self).prepare_data(row)
+
+        array = eval(row_array[1])
+        label = row_array[0]
+
+        return (numpy.array(array).reshape((len(array), 1)), label)

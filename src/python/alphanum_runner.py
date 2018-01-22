@@ -117,8 +117,8 @@ OUTPUT_FILE = open('./output', 'w')
 
 dataset = dataset.CsvFileDataset('./dataset/alphanum')
 
-neural_net = neural.CompleteNeuralNet(layers=[32 * 32, 100, 62],
-                                      neuron_funs=[functions.Sigmoid(), functions.SoftMax()])
+neural_net = neural.CompleteNeuralNet(layers=[32 * 32, 50, 62],
+                                      neuron_funs=[functions.Sigmoid()])
 
 learn(neural_net,
       LEARNING_RATE,

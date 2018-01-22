@@ -36,7 +36,7 @@ class Identity(object):
 
 class Sigmoid(object):
 
-    name = 'sigmoid'
+    name = 'Sigmoid'
 
     def fun(self, z):
         return 1.0 / (1.0 + numpy.exp(-z))
@@ -46,7 +46,7 @@ class Sigmoid(object):
 
 class SoftMax(object):
 
-    name = 'softmax'
+    name = 'Softmax'
 
     def fun(self, z):
 
@@ -66,7 +66,7 @@ class SoftMax(object):
 
 class Tanh(object):
 
-    name = 'tanh'
+    name = 'Tanh'
 
     def fun(self, z):
         return numpy.tanh(z)

@@ -22,10 +22,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import png
-import math
+import json
 import numpy
-import decimal
 
 import functions
 
@@ -48,7 +46,8 @@ class CompleteNeuralNet(object):
     def __init__(self,
                  json=None,
                  layers=[],
-                 neuron_funs=None):
+                 neuron_funs=None,
+                 biases=True):
 
         if neuron_funs is None:
             neuron_funs = [functions.Identity]
@@ -59,7 +58,11 @@ class CompleteNeuralNet(object):
 
         weight_size = layers[0]
         for i in layers[1:]:
-            self.biases.append(numpy.random.randn(i, 1))
+
+            if biases:
+                self.biases.append(numpy.random.randn(i, 1))
+            else:
+                self.biases.append(numpy.zeros((i, 1)))
             self.weights.append(numpy.random.randn(i, weight_size))
 
             weight_size = i
@@ -116,13 +119,12 @@ class CompleteNeuralNet(object):
             self.biases[i] = self.biases[i] + \
                              (learning_rate * error_signals[i])
 
-    def sequential_learn(self, inputs, references, learning_rate, error_file):
+    def sequential_learn(self, inputs, references, learning_rate):
         error_signals = []
 
         outputs = self.compute(inputs)
 
         error = self.total_output_error(outputs, references)
-        #error_file.write('%s\n' % error[0])
 
         error_signals.append(self.output_error_signals(outputs,
                                                        self.zs[-1],
@@ -143,14 +145,26 @@ class CompleteNeuralNet(object):
 
         return outputs, error
 
-    def json_deserialize(self, json):
-        pass
+    def load_layers(self, layers):
+
+        i = 0
+        for layer in layers:
+            biases = []
+            weights = []
+
+            for neuron in layer['neurons']:
+                weights.append(neuron['weights'])
+                biases.append(neuron['biases'])
+
+            self.weights[i] = numpy.array(weights)
+            self.biases[i] = numpy.array(biases)
+            i += 1
 
     def json_serialize(self):
         """
         :TODO: move the function field in layer def
         """
-        json = '{"function": "%s", "type": "%s", "layers": [%s]}'
+        json_str = '{"function": "%s", "type": "%s", "layers": [%s]}'
 
         layers = []
         for layer, biases in zip(self.weights, self.biases):
@@ -158,16 +172,16 @@ class CompleteNeuralNet(object):
             for weights, bias in zip(layer, biases):
                 weights = ','.join([str(w) for w in weights])
                 bias = '%s' % bias
-                neurons.append('{"weights": [%s], "bias": %s}' % (weights, bias))
+                neurons.append('{"weights": [%s], "biases": %s}' % (weights, bias))
             layers.append(neurons)
 
         json_layers = ','.join(['{"neurons": [%s]}' % ','.join(layer) for layer in layers])
 
-        json = json % (self.neuron_funs[0].name,
-                       self.type,
-                       json_layers)
+        json_str = json_str % (self.neuron_funs[0].name,
+                               self.type,
+                               json_layers)
 
-        return json
+        return json_str
 
     @property
     def type(self):

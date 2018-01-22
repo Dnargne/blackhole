@@ -22,6 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import json
 import time
 import numpy
 import random
@@ -55,8 +56,7 @@ def learn(neural_net,
 
         outputs, error = neural_net.sequential_learn(inputs,
                                                      reference,
-                                                     learning_rate,
-                                                     ERROR_FILE)
+                                                     learning_rate)
 
         res = numpy.argmax(outputs)
 
@@ -90,6 +90,7 @@ def compute(neural_net, sample, image_save=False):
 
         if image_save:
             image = inputs
+
         inputs = numpy.array([ float(p) / 255 for p in inputs ]).reshape((784, 1))
 
         outputs = neural_net.compute(inputs)
@@ -110,30 +111,36 @@ def save(neural_net):
 random.seed()
 
 THRESHOLD = 1.0
-LEARNING_RATE = 1.0
-EPOCH_COUNT = 30
-SAMPLE_COUNT = 60000
+LEARNING_RATE = 0.3
+EPOCH_COUNT = 500
+SAMPLE_COUNT = 50000
 TEST_COUNT = 10000
-
-ERROR_FILE = open('./error', 'w')
-OUTPUT_FILE = open('./output', 'w')
 
 learn_dataset = dataset.IdxFileDataset('./dataset/train-images.idx3-ubyte',
                                        './dataset/train-labels.idx1-ubyte')
 
-net = neural.CompleteNeuralNet(layers=[28 * 28, 30, 10],
+net = neural.CompleteNeuralNet(layers=[28 * 28, 500, 150, 10], #[28 * 28, 30, 10]
                                neuron_funs=[functions.Sigmoid()])
 
-learn(net,
-      LEARNING_RATE,
-      learn_dataset,
-      EPOCH_COUNT,
-      (SAMPLE_COUNT, TEST_COUNT))
+fd = open('./neural', 'r')
+json_str = fd.read()
+fd.close()
 
-ERROR_FILE.flush()
-ERROR_FILE.close()
+s = json.loads(json_str)
+net.load_layers(s['layers'])
 
-save(net)
+try:
+    learn(net,
+          LEARNING_RATE,
+          learn_dataset,
+          EPOCH_COUNT,
+          (SAMPLE_COUNT, TEST_COUNT))
+
+    save(net)
+except KeyboardInterrupt:
+    print('Saving neural net...')
+    save(net)
+    print('Neural net saved...')
 
 test_dataset = dataset.IdxFileDataset('./dataset/t10k-images.idx3-ubyte',
                                       './dataset/t10k-labels.idx1-ubyte')
@@ -146,6 +153,3 @@ for i in range(1):
                                                                         float(len(test_dataset)),
                                                                         error_pct,
                                                                         100 - error_pct))
-
-OUTPUT_FILE.flush()
-OUTPUT_FILE.close()

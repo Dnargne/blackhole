@@ -29,50 +29,6 @@ import decimal
 
 __author__ = u'Tegona SA'
 
-class Identity(object):
-
-    def fun(self, z):
-        return z
-
-    def prime(self, x):
-        return 1
-
-class Sigmoid(object):
-
-    name = 'sigmoid'
-
-    def fun(self, z):
-        return 1.0 / (1.0 + numpy.exp(-z))
-
-    def prime(self, x):
-        return x * (1.0 - x)
-
-class SoftMax(object):
-
-    name = 'softmax'
-
-    def fun(self, z):
-
-        s = numpy.sum(numpy.exp(z))
-
-        return numpy.divide(numpy.exp(z), s)
-
-    def prime(self, x):
-        """
-        (u/v)' = (u'v - uv') / v^2
-        """
-        u = numpy.exp(x)
-        v = numpy.sum(numpy.exp(x))
-        up =  numpy.exp(x)
-        vp = numpy.sum(numpy.exp(x))
-
-        prod = (up * v) - (u * vp)
-
-        return numpy.divide(prod, v**2)
-
-#
-## Functions
-
 def set_bit_array(digit):
     outputs = numpy.zeros((10, 1))
     outputs[digit] = 1.0
